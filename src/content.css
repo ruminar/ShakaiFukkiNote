@@ -1,0 +1,36 @@
+form.shakaifukkinote-search-form:not([hidden]) {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+form.shakaifukkinote-search-form > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+form.shakaifukkinote-search-form > input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.shakaifukkinote-search {
+  display: inline-flex;
+  flex: 0 0 36px;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.shakaifukkinote-search > svg { display: block; flex: none; pointer-events: none; }
+.shakaifukkinote-search:hover { background: color-mix(in srgb, currentColor 10%, transparent); }
+.shakaifukkinote-search:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+@media (max-width: 480px) {
+  .shakaifukkinote-search { flex-basis: 40px; width: 40px; height: 40px; }
+}

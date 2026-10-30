@@ -1,0 +1,3 @@
+{
+  "background": { "service_worker": "src/background-chromium.js" }
+}
