@@ -8,7 +8,7 @@
 
 | 確認項目 | 結果 | 条件・範囲 |
 |---|---|---|
-| URL・API・状態管理・DOM・Manifestの自動テスト | 合格 | `npm test`。Node.js 24.18.0、jsdom 30.1.3。ネイティブ拡張APIはモック |
+| URL・API・状態管理・DOM・クリック補助・実行環境の失効・Manifestの自動テスト | 合格 | `npm test`、53件成功。Node.js 24.18.0、jsdom 30.1.3。ネイティブ拡張APIとページ遷移はモック |
 | 両ZIPの生成・参照パス・格納内容・共通ファイルのハッシュ比較 | 合格 | PowerShell 7.6.5、`npm run package`。ZIP内を読み戻して元ファイルとSHA-256比較 |
 | Firefox向け互換性lint | 合格 | web-ext 10.8.0、`--warnings-as-errors`、エラー0・通知0・警告0 |
 | Firefox Desktop一時読み込み | 合格 | Windows、Firefox 155.0.1、web-extの専用一時プロファイル、ヘッドレス。一時アドオンとして読み込み成功を確認し、その後終了 |
@@ -27,7 +27,11 @@
 | 通常検索 `https://note.com/search?q=ComfyUI&context=note&mode=search` | `header[data-header-state="navbar"]` 内の `form[role="search"][action="/search"]` と `input[type="search"][name="q"]`。別の狭幅向け `form[role="search"]` はactionなし、`input[type="text"][aria-label="キーワードやクリエイターで検索"]` |
 | 記事 `https://note.com/tender_yak5221/n/nbb5a8f31dfe3` | `https://note.com/hashtag/youtube`、URLエンコード済み日本語の `/hashtag/…`、関連枠の `/tag/K-POP` |
 
-`tests/fixtures/note.html` は上記の構造から作った最小のDOM試料であり、note全画面のコピーではない。未確認の検索フォームへ汎用的にボタンを挿入しない。通常クリック時にサイト側のルーターが変更済みhrefを無視するかは、実際に拡張を導入した画面で未確認のため、クリックの横取り処理は追加していない。
+`tests/fixtures/note.html` は上記の構造から作った最小のDOM試料であり、note全画面のコピーではない。未確認の検索フォームへ汎用的にボタンを挿入しない。
+
+ユーザーから、アンテナボタンの表示は問題なく、タグリンクの「通常クリックはタグページ、新規タブ表示は検索」という実画面結果を受領した（ブラウザ版・画面URLは未特定）。この結果に対応して、ON中の書き換え済みタグリンクの通常クリックだけをキャプチャ段階で補助する処理を追加した。サイトの旧URLへの遷移を再現した自動テストで検索URLへの遷移、修飾キー・別target・非対象リンクの除外、OFF時の解除を確認する。修正後のnote実画面での再確認は未実施として残す。
+
+その後、ユーザーから画面上の動作成功と「設定を読み込めませんでした」の警告を受領した。警告だけでは元の例外を特定できない。旧コードが設定読込とDOM反映の例外を同じ警告にまとめ、追い越された読込失敗でも警告していたことを確認した。API失効時の終了・購読解除、古い失敗の無視、実際の読込失敗とDOM反映失敗の区別を追加し、自動テストで確認した。今回の警告修正後の実画面での再確認は未実施。
 
 ## 環境ごとの進捗
 

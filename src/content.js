@@ -12,6 +12,7 @@
   let timer = null;
   let revision = 0;
   let readSequence = 0;
+  let disposed = false;
 
   function restoreLink(link, record) {
     if (link.getAttribute("href") === record.written) link.setAttribute("href", record.original);
@@ -27,6 +28,22 @@
     if (!written) return;
     links.set(link, { original, written });
     link.setAttribute("href", written);
+  }
+
+  function onTagClick(event) {
+    if (!api.isAvailable()) { dispose(); return; }
+    if (!enabled || event.defaultPrevented || !event.cancelable || event.button !== 0 ||
+        event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const link = target?.closest("a[href]");
+    const record = links.get(link);
+    if (!record || !link.isConnected || link.getAttribute("href") !== record.written || link.hasAttribute("download")) return;
+    const browsingTarget = link.getAttribute("target") || document.querySelector("base[target]")?.getAttribute("target") || "_self";
+    if (browsingTarget.toLowerCase() !== "_self") return;
+    // noteのSPAルーターへ元のタグURLでの遷移を渡さず、書き換え済みURLを開く。
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    location.assign(record.written);
   }
 
   function eligibleInput(form) {
@@ -78,14 +95,15 @@
     svg.append(path);
     button.append(svg);
     button.addEventListener("click", () => {
+      if (!api.isAvailable()) { dispose(); return; }
       if (!enabled || !form.isConnected || !input.isConnected) return;
       const url = tagURL.searchURL(input.value);
       if (url) location.assign(url);
     });
     // 既存の検索欄を動かさず、フォーム内の右端へ独立したbuttonを追加する。
+    buttons.set(form, { button, input, hadLayoutClass });
     form.classList.add("shakaifukkinote-search-form");
     form.append(button);
-    buttons.set(form, { button, input, hadLayoutClass });
   }
 
   function scan(root) {
@@ -101,6 +119,7 @@
 
   function flush() {
     timer = null;
+    if (!api.isAvailable()) { dispose(); return; }
     if (!enabled) return;
     // 移動した要素は維持し、切り離されたものは復元して参照を解放する。
     for (const [link, record] of links) {
@@ -142,8 +161,10 @@
     enabled = nextEnabled;
     if (enabled) {
       scan(document);
+      window.addEventListener("click", onTagClick, true);
       observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ["href", "role", "action", "type", "name", "aria-label"] });
     } else {
+      window.removeEventListener("click", onTagClick, true);
       observer.disconnect();
       if (timer !== null) clearTimeout(timer);
       timer = null;
@@ -154,28 +175,66 @@
     }
   }
 
-  async function refresh() {
-    const startRevision = revision;
-    const sequence = ++readSequence;
-    try {
-      const stored = await api.getEnabled();
-      if (startRevision === revision && sequence === readSequence) apply(typeof stored.enabled === "boolean" ? stored.enabled : true);
-    } catch {
-      if (startRevision === revision && sequence === readSequence) apply(false);
-      console.warn("社会復帰note：設定を読み込めませんでした。ページの変更を停止します。");
+  function applySafely(nextEnabled) {
+    try { apply(nextEnabled); }
+    catch {
+      // 設定APIの失敗とは分け、ページURLや入力内容をログへ含めない。
+      try { apply(false); }
+      catch { /* 復元も失敗した場合は、下記の警告とページ再読込で対処する。 */ }
+      console.warn("社会復帰note：ページへの反映に失敗しました（DOM_APPLY_FAILED）。ページを再読み込みしてください。");
     }
   }
 
-  // 初期読込中の通知を取りこぼさないよう先に購読する。
-  api.onStorageChanged.addListener((changes, area) => {
+  function dispose() {
+    if (disposed) return;
+    disposed = true;
+    readSequence++;
+    revision++;
+    applySafely(false);
+    window.removeEventListener("pageshow", refresh);
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    try { api.onStorageChanged.removeListener(onStorageChanged); }
+    catch { /* 拡張の更新・再読み込み後はAPIリスナーの解除も利用できない場合がある。 */ }
+  }
+
+  async function refresh() {
+    if (disposed) return;
+    if (!api.isAvailable()) { dispose(); return; }
+    const startRevision = revision;
+    const sequence = ++readSequence;
+    let stored;
+    try {
+      stored = await api.getEnabled();
+      if (!stored || typeof stored !== "object") throw new Error("設定APIの応答が不正です。");
+    } catch (error) {
+      if (disposed) return;
+      if (api.isContextInvalidated(error)) { dispose(); return; }
+      if (startRevision !== revision || sequence !== readSequence) return;
+      applySafely(false);
+      console.warn("社会復帰note：設定を読み込めませんでした（STORAGE_READ_FAILED）。ページの変更を停止します。");
+      return;
+    }
+    if (disposed) return;
+    if (!api.isAvailable()) { dispose(); return; }
+    if (startRevision === revision && sequence === readSequence) applySafely(typeof stored.enabled === "boolean" ? stored.enabled : true);
+  }
+
+  function onStorageChanged(changes, area) {
+    if (disposed) return;
+    if (!api.isAvailable()) { dispose(); return; }
     if (area !== "local" || !Object.hasOwn(changes, "enabled")) return;
     revision++;
     const value = changes.enabled.newValue;
-    apply(typeof value === "boolean" ? value : true);
-  });
-  window.addEventListener("pageshow", refresh);
-  document.addEventListener("visibilitychange", () => {
+    applySafely(typeof value === "boolean" ? value : true);
+  }
+
+  function onVisibilityChange() {
     if (document.visibilityState === "visible") refresh();
-  });
+  }
+
+  // 初期読込中の通知を取りこぼさないよう先に購読する。
+  api.onStorageChanged.addListener(onStorageChanged);
+  window.addEventListener("pageshow", refresh);
+  document.addEventListener("visibilitychange", onVisibilityChange);
   refresh();
 })();

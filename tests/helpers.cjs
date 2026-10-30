@@ -17,7 +17,7 @@ function event() {
 
 function mockNative(kind = "browser", initial) {
   const state = { value: initial, writes: [], badges: [], titles: [], failRead: false, failWrite: false, failDisplay: false, readHook: null };
-  const runtime = { onInstalled: event(), onStartup: event(), lastError: undefined };
+  const runtime = { id: "shakaifukkinote-test", onInstalled: event(), onStartup: event(), lastError: undefined };
   const changed = event();
   function method(operation) {
     if (kind === "browser") return (...args) => Promise.resolve().then(() => operation(...args));
@@ -75,16 +75,32 @@ function background(mock) {
   return { context, warnings };
 }
 
-function content(mock, html) {
+function content(mock, html, { navigate } = {}) {
   const console = new VirtualConsole();
   const errors = [];
+  const warnings = [];
   console.on("jsdomError", error => errors.push(error));
+  console.on("warn", message => warnings.push(message));
   const dom = new JSDOM(html ?? fs.readFileSync(path.join(__dirname, "fixtures/note.html"), "utf8"), {
     url: "https://note.com/", runScripts: "outside-only", pretendToBeVisual: true, virtualConsole: console
   });
   dom.window[mock.kind] = mock.native;
-  for (const name of ["api.js", "tag-url.js", "content.js"]) dom.window.eval(source(name));
-  return { dom, window: dom.window, document: dom.window.document, errors };
+  if (navigate) {
+    // JSDOMが実装しないページ遷移だけを置き換え、製品コードそのものを実行する。
+    const context = vm.createContext({
+      [mock.kind]: mock.native,
+      window: dom.window, document: dom.window.document,
+      Node: dom.window.Node, Element: dom.window.Element,
+      MutationObserver: dom.window.MutationObserver,
+      URL: dom.window.URL, URLSearchParams: dom.window.URLSearchParams,
+      location: { assign: navigate }, console: dom.window.console,
+      setTimeout: dom.window.setTimeout.bind(dom.window), clearTimeout: dom.window.clearTimeout.bind(dom.window)
+    });
+    for (const name of ["api.js", "tag-url.js", "content.js"]) vm.runInContext(source(name), context);
+  } else {
+    for (const name of ["api.js", "tag-url.js", "content.js"]) dom.window.eval(source(name));
+  }
+  return { dom, window: dom.window, document: dom.window.document, errors, warnings };
 }
 
 async function mutation() {
