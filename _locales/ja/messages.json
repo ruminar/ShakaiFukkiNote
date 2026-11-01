@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "社会復帰note"
+  },
+  "extensionDescription": {
+    "message": "公式画面をそのままに、noteのタグリンクを新着順の記事検索へ切り替えます。"
+  }
+}

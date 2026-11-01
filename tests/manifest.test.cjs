@@ -9,6 +9,14 @@ test("Manifestは最小権限・共通コンテンツ・MV3を維持", () => {
   const common = json("manifests/common.json");
   assert.equal(common.version, json("package.json").version);
   assert.equal(common.manifest_version, 3);
+  assert.equal(common.default_locale, "ja");
+  const messages = json("_locales/ja/messages.json");
+  for (const value of [common.name, common.description, common.action.default_title]) {
+    const key = /^__MSG_(\w+)__$/u.exec(value)?.[1];
+    assert.ok(key, "ストアの言語判定用にメッセージ参照を使う");
+    assert.ok(messages[key]?.message, "日本語メッセージの参照先が存在する");
+  }
+  assert.equal(messages.extensionName.message, "社会復帰note");
   assert.deepEqual(common.permissions, ["storage"]);
   assert.deepEqual(common.content_scripts[0].matches, ["https://note.com/*"]);
   assert.deepEqual(common.content_scripts[0].js, ["src/api.js", "src/tag-url.js", "src/content.js"]);

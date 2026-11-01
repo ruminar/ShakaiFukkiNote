@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "社会復帰note",
+  "name": "__MSG_extensionName__",
   "version": "0.1.0",
-  "description": "公式画面をそのままに、noteのタグリンクを新着順の記事検索へ切り替えます。",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "ja",
   "permissions": ["storage"],
   "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {
-    "default_title": "社会復帰note",
+    "default_title": "__MSG_extensionName__",
     "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
   },
   "content_scripts": [{

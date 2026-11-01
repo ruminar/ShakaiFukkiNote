@@ -71,3 +71,5 @@ ON/OFFは端末・ブラウザ間で同期しません。「ひきこもりnote�
 ## 設計
 
 [0.1.0技術設計書](spec/ShakaiFukkiNote_SPEC_v0.1.0.md)を参照してください。JavaScript・CSSは共通、Manifestと最小API互換層でブラウザ差分を扱います。アイコンの元図は `icons/source.svg`、配布用PNGは16・48・128pxです。
+
+掲載言語は日本語です。Manifestの `default_locale` を `ja` とし、名称・概要は `_locales/ja/messages.json` を参照します。ストアで英語の掲載枠が既に作成されている場合は、新パッケージへ差し替えた後、日本語の掲載枠へ説明・画像を設定してから不要な英語枠を削除してください。

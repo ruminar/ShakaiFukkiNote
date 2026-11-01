@@ -230,7 +230,8 @@ ShakaiFukkiNote/
 ### 7.2 Manifest V3とFirefox向け宣言
 
 - `manifest_version: 3`
-- `name: 社会復帰note`
+- `default_locale: ja`、`_locales/ja/messages.json` を同梱し、日本語のみを掲載言語として宣言する。
+- `name: __MSG_extensionName__`（解決値：社会復帰note）、`description: __MSG_extensionDescription__`。`action.default_title` も同じ名称を参照する。ストアの言語検出に使うため、Manifestへ日本語文字列を直接固定しない。
 - `version: 0.1.0`
 - `permissions: ["storage"]`
 - `content_scripts.matches: ["https://note.com/*"]`

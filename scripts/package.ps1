@@ -10,8 +10,14 @@ $Common = Get-Content -Raw (Join-Path $ProjectRoot 'manifests/common.json') | Co
 $Package = Get-Content -Raw (Join-Path $ProjectRoot 'package.json') | ConvertFrom-Json -AsHashtable
 if ($Common.version -ne $Package.version -or $Common.manifest_version -ne 3) { throw 'バージョンまたはManifest形式が不正です。' }
 if (($Common.permissions -join ',') -ne 'storage' -or $Common.action.ContainsKey('default_popup')) { throw '権限またはアクション定義が最小構成と一致しません。' }
+if ($Common.default_locale -ne 'ja') { throw '既定言語は日本語である必要があります。' }
+$Messages = Get-Content -Raw (Join-Path $ProjectRoot '_locales/ja/messages.json') | ConvertFrom-Json -AsHashtable
+foreach ($LocalizedValue in @($Common.name, $Common.description, $Common.action.default_title)) {
+    if ($LocalizedValue -notmatch '^__MSG_(\w+)__$' -or !$Messages.ContainsKey($Matches[1]) -or !$Messages[$Matches[1]].message) { throw '日本語メッセージの参照が不正です。' }
+}
 $Files = @(
     'LICENSE', 'README.md',
+    '_locales/ja/messages.json',
     'src/api.js', 'src/background-chromium.js', 'src/background.js',
     'src/tag-url.js', 'src/content.js', 'src/content.css',
     'icons/icon16.png', 'icons/icon48.png', 'icons/icon128.png'
