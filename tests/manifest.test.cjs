@@ -31,7 +31,7 @@ test("対象別backgroundとFirefoxの署名・Android・収集なし宣言", ()
   assert.equal(chromium.background.service_worker, "src/background-chromium.js");
   assert.equal(chromium.background.scripts, undefined);
   assert.equal(firefox.background.service_worker, undefined);
-  assert.equal(firefox.background.persistent, false);
+  assert.equal(Object.hasOwn(firefox.background, "persistent"), false);
   assert.deepEqual(firefox.background.scripts, ["src/api.js", "src/background.js"]);
   const settings = firefox.browser_specific_settings;
   assert.equal(settings.gecko.id, "shakaifukkinote@ruminar");

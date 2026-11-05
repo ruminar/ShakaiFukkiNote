@@ -255,8 +255,7 @@ ShakaiFukkiNote/
 ```json
 {
   "background": {
-    "scripts": ["src/api.js", "src/background.js"],
-    "persistent": false
+    "scripts": ["src/api.js", "src/background.js"]
   },
   "browser_specific_settings": {
     "gecko": {
@@ -273,7 +272,7 @@ ShakaiFukkiNote/
 }
 ```
 
-- FirefoxはMV3の非永続イベントページを使用する。Chrome / EdgeはService Workerを使用し、入口で `importScripts("api.js", "background.js")` を同期実行する。共通処理は `window`・DOM・常駐タイマーを前提としない。[backgroundの公式仕様](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background)
+- FirefoxはMV3の既定動作で非永続イベントページを使用する。`persistent` は明示するとブラウザで警告になるため省略する。Chrome / EdgeはService Workerを使用し、入口で `importScripts("api.js", "background.js")` を同期実行する。共通処理は `window`・DOM・常駐タイマーを前提としない。[backgroundの公式仕様](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/background)
 - 拡張IDは上記を本プロジェクトの固定候補とし、初回署名前にAMO上の一意性を確認して確定する。メールの受信先を意味しない。確定後は更新やDesktop / Androidで変更しない。MV3の署名には明示したIDが必要。[拡張IDの公式説明](https://extensionworkshop.com/documentation/develop/extensions-and-the-add-on-id/)
 - `gecko_android` を明示しAndroid対応を申告する。上記の最低バージョンは内蔵データ収集宣言に対応する下限として採用し、実装時に最低版と現行安定版で検証する。API等で引き上げが必要なら両環境を独立に見直す。申告だけで実機互換性を証明したことにはしない。[宣言形式](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/browser_specific_settings)、[内蔵同意機能と対応版](https://extensionworkshop.com/documentation/develop/firefox-builtin-data-consent/)
 

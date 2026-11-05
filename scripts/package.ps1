@@ -30,7 +30,7 @@ foreach ($Target in @('chromium', 'firefox')) {
     if ($Target -eq 'chromium') {
         if ($Manifest.background.ContainsKey('scripts') -or $Manifest.background.service_worker -ne 'src/background-chromium.js') { throw 'Chrome用backgroundが不正です。' }
     } else {
-        if ($Manifest.background.ContainsKey('service_worker') -or $Manifest.background.persistent -ne $false) { throw 'Firefox用backgroundが不正です。' }
+        if ($Manifest.background.ContainsKey('service_worker') -or $Manifest.background.ContainsKey('persistent')) { throw 'Firefox用backgroundが不正です。' }
         $Settings = $Manifest.browser_specific_settings
         if (!$Settings.gecko.id -or ($Settings.gecko.data_collection_permissions.required -join ',') -ne 'none' -or !$Settings.gecko_android.strict_min_version) { throw 'Firefox向け宣言が不足しています。' }
     }

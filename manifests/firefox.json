@@ -1,5 +1,5 @@
 {
-  "background": { "scripts": ["src/api.js", "src/background.js"], "persistent": false },
+  "background": { "scripts": ["src/api.js", "src/background.js"] },
   "browser_specific_settings": {
     "gecko": {
       "id": "shakaifukkinote@ruminar",
