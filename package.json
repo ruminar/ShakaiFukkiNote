@@ -1,6 +1,6 @@
 {
   "name": "shakaifukkinote",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "noteのタグリンクを新着記事検索へ切り替えるブラウザ拡張",
   "license": "MIT",

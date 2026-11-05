@@ -1,4 +1,4 @@
-# 社会復帰note 0.1.0
+# 社会復帰note 0.1.1
 
 **公式ホームは使う。タグの行き先は自分で決める。**
 
@@ -46,8 +46,8 @@ npm run lint:firefox
 
 - `dist/chromium/`：Chrome / Edgeの拡張管理画面から開発用に読み込むフォルダー
 - `dist/firefox/`：Firefoxの `about:debugging` → このFirefox → 一時的なアドオンを読み込む、で `manifest.json` を指定するフォルダー
-- `dist/ShakaiFukkiNote-0.1.0-chromium.zip`
-- `dist/ShakaiFukkiNote-0.1.0-firefox.zip`
+- `dist/ShakaiFukkiNote-0.1.1-chromium.zip`
+- `dist/ShakaiFukkiNote-0.1.1-firefox.zip`
 - `dist/verification.json`：生成元・作業状態・ツール版・ZIPのSHA-256
 
 Firefoxの一時読み込みはブラウザ再起動で解除されます。Firefox ZIPは未署名で、一般利用者向けの署名済みXPIとは異なります。署名・ストア申請・GitHub Release・タグ作成をビルド処理は実行しません。Firefoxの拡張IDは設計上の候補を設定しており、初回署名前の一意性確認が残っています。
@@ -68,8 +68,14 @@ npx --no-install web-ext run --source-dir dist/firefox --target firefox-android 
 
 ON/OFFは端末・ブラウザ間で同期しません。「ひきこもりnote」との自動協調は0.1.0の対象外です。
 
+## 0.1.1の変更
+
+Firefox用Manifestから不要な `background.persistent` 指定を削除し、Manifest V3での読み込み警告に対応しました。非永続バックグラウンドの動作はMV3の既定値を使用します。
+
 ## 設計
 
 [0.1.0技術設計書](spec/ShakaiFukkiNote_SPEC_v0.1.0.md)を参照してください。JavaScript・CSSは共通、Manifestと最小API互換層でブラウザ差分を扱います。アイコンの元図は `icons/source.svg`、配布用PNGは16・48・128pxです。
+
+[0.1.1差分設計書](spec/ShakaiFukkiNote_SPEC_v0.1.1.md)に更新内容を記載しています。
 
 掲載言語は日本語です。Manifestの `default_locale` を `ja` とし、名称・概要は `_locales/ja/messages.json` を参照します。ストアで英語の掲載枠が既に作成されている場合は、新パッケージへ差し替えた後、日本語の掲載枠へ説明・画像を設定してから不要な英語枠を削除してください。
